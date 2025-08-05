@@ -1,3 +1,5 @@
+
+
 const questions = [
   {
     question: "What is the capital of France?",
@@ -8,69 +10,55 @@ const questions = [
     question: "What is the highest mountain in the world?",
     choices: ["Everest", "Kilimanjaro", "Denali", "Matterhorn"],
     answer: "Everest",
-  },
-  {
-    question: "What is the largest country by area?",
-    choices: ["Russia", "China", "Canada", "United States"],
-    answer: "Russia",
-  },
-  {
-    question: "Which is the largest planet in our solar system?",
-    choices: ["Earth", "Jupiter", "Mars"],
-    answer: "Jupiter",
-  },
-  {
-    question: "What is the capital of Canada?",
-    choices: ["Toronto", "Montreal", "Vancouver", "Ottawa"],
-    answer: "Ottawa",
-  },
+  }
 ];
 
-const questionsElement = document.getElementById("questions");
+const form = document.getElementById("quiz-form");
 
-// Load saved answers from sessionStorage
-const savedAnswers = JSON.parse(sessionStorage.getItem("userAnswers")) || [];
-
-function saveAnswer(index, value) {
-  savedAnswers[index] = value;
-  sessionStorage.setItem("userAnswers", JSON.stringify(savedAnswers));
-}
+// Load stored answers if available
+let storedAnswers = sessionStorage.getItem("quiz-answers");
+let userAnswers = storedAnswers ? JSON.parse(storedAnswers) : [];
 
 function renderQuestions() {
-  for (let i = 0; i < questions.length; i++) {
-    const q = questions[i];
-    const questionWrapper = document.createElement("div");
+  form.innerHTML = ""; // Clear previous
+  questions.forEach((q, i) => {
+    const wrapper = document.createElement("div");
 
-    const questionText = document.createElement("p");
-    questionText.textContent = q.question;
-    questionWrapper.appendChild(questionText);
+    const qText = document.createElement("p");
+    qText.textContent = q.question;
+    wrapper.appendChild(qText);
 
-    for (let j = 0; j < q.choices.length; j++) {
-      const choice = q.choices[j];
-
+    q.choices.forEach(choice => {
       const label = document.createElement("label");
-      const radio = document.createElement("input");
-      radio.type = "radio";
-      radio.name = `question-${i}`;
-      radio.value = choice;
+      const input = document.createElement("input");
 
-      // Check from sessionStorage
-      if (savedAnswers[i] === choice) {
-        radio.checked = true;
+      input.type = "radio";
+      input.name = `question-${i}`;
+      input.value = choice;
+
+      if (userAnswers[i] === choice) {
+        input.checked = true;
       }
 
-      radio.addEventListener("change", () => {
-        saveAnswer(i, choice);
+      // Save to session storage on change
+      input.addEventListener("change", () => {
+        userAnswers[i] = choice;
+        sessionStorage.setItem("quiz-answers", JSON.stringify(userAnswers));
       });
 
-      label.appendChild(radio);
+      label.appendChild(input);
       label.appendChild(document.createTextNode(choice));
-      questionWrapper.appendChild(label);
-      questionWrapper.appendChild(document.createElement("br"));
-    }
+      wrapper.appendChild(label);
+      wrapper.appendChild(document.createElement("br"));
+    });
 
-    questionsElement.appendChild(questionWrapper);
-  }
+    form.appendChild(wrapper);
+  });
 }
 
 renderQuestions();
+
+document.getElementById("submit").addEventListener("click", () => {
+  alert("Quiz submitted!");
+});
+
